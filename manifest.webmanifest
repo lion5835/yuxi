@@ -1,0 +1,18 @@
+{
+  "name": "換一句話",
+  "short_name": "換一句話",
+  "description": "認識你的語言習慣，練習看見另一種可能",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f4efe4",
+  "theme_color": "#f4efe4",
+  "lang": "zh-Hant-TW",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}
