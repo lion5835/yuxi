@@ -1,35 +1,57 @@
-const CACHE = 'yuxi-v1'
-const PRECACHE = ['./', './index.html', './manifest.webmanifest', './favicon.svg']
+const CACHE = 'huanyijuhua-v2'
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()),
-  )
+  event.waitUntil(self.skipWaiting())
 })
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
-    ).then(() => self.clients.claim()),
+    caches
+      .keys()
+      .then((keys) => Promise.all(keys.map((k) => caches.delete(k))))
+      .then(() => self.clients.claim()),
   )
 })
+
+function isHtmlOrScript(req) {
+  const dest = req.destination
+  if (req.mode === 'navigate' || dest === 'document' || dest === 'script') return true
+  const path = new URL(req.url).pathname
+  return path.endsWith('.html') || path.endsWith('.js') || path.endsWith('/')
+}
 
 self.addEventListener('fetch', (event) => {
   const req = event.request
   if (req.method !== 'GET') return
-  event.respondWith(
-    caches.match(req).then((cached) => {
-      const fetched = fetch(req)
+  const url = new URL(req.url)
+  if (url.origin !== location.origin) return
+
+  if (isHtmlOrScript(req)) {
+    event.respondWith(
+      fetch(req)
         .then((res) => {
-          if (res.ok && new URL(req.url).origin === location.origin) {
+          if (res.ok) {
             const copy = res.clone()
             caches.open(CACHE).then((cache) => cache.put(req, copy))
           }
           return res
         })
-        .catch(() => cached)
-      return cached || fetched
-    }),
+        .catch(() => caches.match(req)),
+    )
+    return
+  }
+
+  event.respondWith(
+    caches.match(req).then(
+      (cached) =>
+        cached ||
+        fetch(req).then((res) => {
+          if (res.ok) {
+            const copy = res.clone()
+            caches.open(CACHE).then((cache) => cache.put(req, copy))
+          }
+          return res
+        }),
+    ),
   )
 })
