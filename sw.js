@@ -1,4 +1,4 @@
-const CACHE = 'huanyijuhua-v2'
+const CACHE = 'huanyijuhua-v3'
 
 self.addEventListener('install', (event) => {
   event.waitUntil(self.skipWaiting())
